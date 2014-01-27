@@ -189,7 +189,6 @@ class FromImport(ImportInfo):
                 return prefix + postfix
 
         for name, alias in self.names_and_aliases:
-            print name, alias
             res_list1 = []
             if (
                 indent and
@@ -204,24 +203,19 @@ class FromImport(ImportInfo):
                 res_list1.append('\n')
                 res_list1.append(4 * ' ')
                 last_line_char_num = 5
-                print last_line_char_num, '179'
             res_list1.append(name)
             last_line_char_num += len(name)
-            print last_line_char_num, '185'
             if alias:
                 res_list1.extend([' as ', alias])
                 last_line_char_num += (4 + len(alias))
             res_list1.append(',')
             last_line_char_num += 1
-            print last_line_char_num, 191
             if last_line_char_num >= 79:
                 # res_list1.insert(0, '\n')
                 last_line_char_num = 0
-                print 0, 195
             else:
                 res_list1.append(' ')
                 last_line_char_num += 1
-                print last_line_char_num, 199
             res_list.extend(res_list1)
             # ('\n' if indent else ' ')
         result = ''.join(res_list[:-2]) + indent * ')'

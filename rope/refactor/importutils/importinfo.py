@@ -30,7 +30,7 @@ class ImportStatement(object):
     import_info = property(_get_import_info, _set_import_info)
 
     def get_import_statement(self):
-        if self._is_changed or self.main_statement is None:
+        if True or self._is_changed or self.main_statement is None:
             return self.import_info.get_import_statement()
         else:
             return self.main_statement
@@ -167,13 +167,65 @@ class FromImport(ImportInfo):
                 self.module_name, context.folder, self.level)
 
     def get_import_statement(self):
-        result = 'from ' + '.' * self.level + self.module_name + ' import '
+        res_list = ['from ', '.' * self.level, self.module_name, ' import ']
+        indent = int(len(self.names_and_aliases) > 1)
+        if indent:
+            res_list.append('(')
+        # result = 'from ' + '.' * self.level + self.module_name + ' import '
+        last_line_char_num = 0
+        if not indent:
+            # Only one import - but we need to be ensured that
+            # it doesn't breaks 79 characters limit
+            prefix = ''.join(res_list)
+            res_list0 = []
+            for name, alias in self.names_and_aliases:
+                res_list0.append(name)
+                if alias:
+                    res_list0.extend([' as ', alias])
+                postfix = ''.join(res_list0)
+                if len(prefix) + len(postfix) > 79:
+                    prefix += '(\n'
+                    postfix = 4 * ' ' + postfix + ')'
+                return prefix + postfix
+
         for name, alias in self.names_and_aliases:
-            result += name
+            print name, alias
+            res_list1 = []
+            if (
+                indent and
+                (
+                    not last_line_char_num or
+                    (last_line_char_num + len(name)) > 79
+                )
+            ):
+                # if res_list[-1] != '\n':
+                if res_list[-1] == ' ':
+                    res_list = res_list[:-1]
+                res_list1.append('\n')
+                res_list1.append(4 * ' ')
+                last_line_char_num = 5
+                print last_line_char_num, '179'
+            res_list1.append(name)
+            last_line_char_num += len(name)
+            print last_line_char_num, '185'
             if alias:
-                result += ' as ' + alias
-            result += ', '
-        return result[:-2]
+                res_list1.extend([' as ', alias])
+                last_line_char_num += (4 + len(alias))
+            res_list1.append(',')
+            last_line_char_num += 1
+            print last_line_char_num, 191
+            if last_line_char_num >= 79:
+                # res_list1.insert(0, '\n')
+                last_line_char_num = 0
+                print 0, 195
+            else:
+                res_list1.append(' ')
+                last_line_char_num += 1
+                print last_line_char_num, 199
+            res_list.extend(res_list1)
+            # ('\n' if indent else ' ')
+        result = ''.join(res_list[:-2]) + indent * ')'
+        return result
 
     def is_empty(self):
         return len(self.names_and_aliases) == 0
